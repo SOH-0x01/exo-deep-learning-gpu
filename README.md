@@ -1,7 +1,7 @@
-exo-core
+exo-deep-learing-gpu
 =======
 
-A set of ansible playbooks to deploy a cluster of CoreOS machine on Exoscale.
+A set of ansible playbooks to deploy a GPU instance with common NN frameworks on Exoscale.
 
 - Exoscale is a Switzerland cloud provider for the digital native based on the Apache Cloudstack API.
 - Cloudstack is open source software designed to deploy and manage large networks of virtual machines.
@@ -26,24 +26,22 @@ It will do the following for you:
 - Install or update Ansible, module ansible
 - Install or update your python cloudstack API, module cs
 - Download the latest ansible cloudstack dynamic inventory, cloudstack.py
-- Test the cloustack dynamic inventory, issuing the inventory as a json inventory to the commandline
 
 ```./setup.sh```
 
-Test the dynamic inventory with ansible.
+Run the playbook to create the instance.
+```
+$ ansible-playbook create-instance.yaml
+```
 
-```ansible -i cloudstack.py all -m ping```
-
-This will ping all your exoscale instances and report if they are up.
-
-
+Feel free to adapt *group_vars/all.yaml* and the playbooks to modify the parameters to your liking.
 
 
 Authors
 =======
-
+Marc Guillen (marc.guillen@datsci.farm)
 
 Licence
 =======
-GNU
-Click on the [Link](COPYING) to see the full text.
+APACHE
+Click on the [Link](LICENSE) to see the full text.
