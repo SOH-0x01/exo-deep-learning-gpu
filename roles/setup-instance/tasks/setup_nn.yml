@@ -1,0 +1,78 @@
+# Install the Python Neural Network
+
+  # Install python
+  - name: Install Python(s)
+    apt:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - "python-minimal"
+      - "python-pip"
+      - "python3-minimal"
+      - "python3-pip"
+    tags: py
+
+  # Make sure X is disabled, some dependencies will install lightdm
+  - name: Stop and disable X/lightdm
+    service:
+      name: lightdm
+      state: stopped
+      enabled: no
+    tags: base
+
+  # Tensorflow
+  - name: Install Tensorflow, GPU support, python2
+    pip:
+      name: tensorflow-gpu
+      executable: pip2
+    tags: nn
+
+  - name: Install Tensorflow, GPU support, python3
+    pip:
+      name: tensorflow-gpu
+      executable: pip3
+    tags: nn
+
+  # Theano
+  - name: Install Theano, python2
+    pip:
+      name: theano
+      executable: pip2
+    tags: nn
+
+  - name: Install Theano, python3
+    pip:
+      name: theano
+      executable: pip3
+    tags: nn
+
+  - name: Create Theano ressource configuration
+    template:
+      src: theano-rc.j2
+      dest: /etc/theanorc
+      owner: root
+      group: root
+      mode: 0644
+    tags: nn
+
+  - name: Set Theano envirronment
+    template:
+      src: theano-profile.j2
+      dest: /etc/profile.d/theano.sh
+      owner: root
+      group: root
+      mode: 0644
+    tags: nn
+
+  # Keras
+  - name: Install Keras from git, python2
+    pip:
+      name: keras
+      executable: pip2
+    tags: nn
+
+  - name: Install Keras from git, python3
+    pip:
+      name: keras
+      executable: pip3
+    tags: nn

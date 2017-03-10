@@ -1,0 +1,99 @@
+
+  # Install nvidia drivers
+
+  - name: Download latest NVIDA GRID K520 drivers
+    get_url:
+      url: "http://us.download.nvidia.com/XFree86/Linux-x86_64/{{ nvidia_driver_version }}/NVIDIA-Linux-x86_64-{{ nvidia_driver_version }}.run"
+      dest: "/tmp/driver.run"
+    ignore_errors: True
+    tags: gpu
+
+  - name: Install the NVIDIA GRID K520 driver
+    shell: "sh /tmp/driver.run -q -a -n -s"
+    tags: gpu
+
+  # Restart and wait for instance to come up
+  - name: Restart instance
+    shell: nohup bash -c 'sleep 2 && shutdown -r now "Ansible updates triggered"' &
+    async: 0
+    poll: 0
+    ignore_errors: true
+
+  - name: Wait instance
+    local_action:
+      module: wait_for
+      host: "{{ ansible_host }}"
+      port: 22
+      delay: 10
+      timeout: 300
+    become: false
+
+  # Install CUDA
+
+  - name: Download latest CUDA repository, assuming Ubuntu 16.04
+    get_url:
+      url: "http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/cuda-repo-ubuntu1604_{{ cuda_version }}_amd64.deb"
+      dest: "/tmp/cuda.deb"
+    tags: gpu
+
+  - name: Install CUDA repository deb package
+    apt:
+      deb: "/tmp/cuda.deb"
+    tags: gpu
+
+  - name: Install CUDA packages
+    apt:
+      name: cuda
+      update_cache: yes
+      install_recommends: yes
+    tags: gpu
+
+  - name: Set CUDA envirronment
+    template:
+      src: cuda-profile.j2
+      dest: /etc/profile.d/gpu.sh
+      owner: root
+      group: root
+      mode: 0644
+    tags: gpu
+
+  # Install NVIDIA CUDA Profile Tools Interface
+  - name: Install NVIDIA CUDA Profile Tools Interface
+    apt:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - "libcupti-dev"
+    tags: gpu
+
+  # Install CuDNN
+
+  - name: Copy and extract cudnn archive
+    unarchive:
+      src: "cudnn-8.0-linux-x64-v{{ cuDNN_version }}.tgz"
+      dest: /tmp
+    tags: gpu
+
+  - name: Copy cdnn.h file into cuda include dir
+    shell: cp /tmp/cuda/include/cudnn.h /usr/local/cuda/include/
+    tags: gpu
+
+  - name: Copy libcudnn* files into cuda lib64 dir
+    shell: cp /tmp/cuda/lib64/* /usr/local/cuda/lib64/
+    tags: gpu
+
+  # Restart and wait for instance to come up
+  - name: Restart instance
+    shell: nohup bash -c 'sleep 2 && shutdown -r now "Ansible updates triggered"' &
+    async: 0
+    poll: 0
+    ignore_errors: true
+
+  - name: Wait instance
+    local_action:
+      module: wait_for
+      host: "{{ ansible_host }}"
+      port: 22
+      delay: 10
+      timeout: 300
+    become: false

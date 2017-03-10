@@ -1,0 +1,26 @@
+- hosts: localhost
+  connection: local
+  vars:
+    exo_zone: CH-GVA-2
+    exo_template: Linux Ubuntu 16.04 LTS 64-bit 10G Disk (2016-10-20-85bb6c)
+    exo_instance_type: GPU-huge # 4 gpu, for one single gpu use GPU-small
+  post_tasks:
+    - name: Wait for the ssh to be up
+      become: false
+      local_action: wait_for host="{{ hostvars[item].ansible_host }}" port=22 timeout=90 delay=30
+      with_items: "{{ groups['instance'] }}"
+  roles:
+    - create-instance
+    - create-context
+
+- hosts: instance
+  become: True
+  vars:
+    # Java
+    java_version: 8
+    # Nvidia / Cuda
+    nvidia_driver_version: "370.28"
+    cuda_version: "8.0.61-1"
+    cuDNN_version: "5.1"
+  roles:
+    - setup-instance

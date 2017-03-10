@@ -1,0 +1,112 @@
+# Setup base tools on the gpu instance
+
+  # Upgrade the system
+  - name: Update all packages to the latest version
+    apt:
+      update_cache: yes
+      upgrade: dist
+    tags: upd
+
+  # Locale Stuff
+  - name: Install locale
+    apt:
+      name: "{{ item }}"
+      cache_valid_time: 3600
+    tags: base
+    with_items:
+      - language-pack-en
+      - language-pack-en-base
+
+  - name: Reconfigure dpkg
+    command: dpkg-reconfigure -f noninteractive locales
+    tags: base
+
+  - name: Set system wide locale
+    template:
+      src: locale.j2
+      dest: /etc/default/locale
+      owner: root
+      group: root
+      mode: 644
+    tags: base
+
+  # Base tools
+  - name: Install base tools
+    apt:
+      name: "{{ item }}"
+      cache_valid_time: 3600
+    tags: base
+    with_items:
+      - build-essential
+      - binutils
+      - g++
+      - curl
+      - debconf
+      - dmidecode
+      - htop
+      - iftop
+      - iotop
+      - pciutils
+      - screen
+      - sysstat
+      - tmux
+      - unzip
+      - vim
+      - wget
+      - git
+      - tree
+      - make
+      - cmake
+      - automake
+      - p7zip-full
+      - unrar-free
+      - bzip2
+      - bc
+      - software-properties-common
+
+  # Install java ecosystem and related
+  - name: Install Java and Maven
+    apt:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - "openjdk-{{ java_version }}-jdk"
+      - maven
+    tags: java
+
+  # Blacklist kernel driver that mess up with compilation
+  - name: Blacklist kernel driver
+    kernel_blacklist:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - nouveau
+      - rivafb
+      - nvidiafb
+    tags: base
+
+  - name: Update system with drivers disabled
+    shell: update-initramfs -u
+    tags: base
+
+  # Install extra vritual
+  - name: Install linux packages
+    apt:
+      pkg: linux-image-extra-virtual
+    tags: base
+
+  # Restart and wait for instance to come up
+  - name: Restart instance
+    shell: nohup bash -c 'sleep 2 && shutdown -r now "Ansible updates triggered"' &
+    async: 0
+    poll: 0
+    ignore_errors: true
+
+  - name: Wait instance
+    local_action:
+      module: wait_for
+      host: "{{ ansible_host }}"
+      port: 22
+      delay: 10
+      timeout: 300
+    become: false

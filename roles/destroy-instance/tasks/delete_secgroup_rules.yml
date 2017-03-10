@@ -1,0 +1,21 @@
+#  Delete instance Security Groups rules
+  - name: Delete instance SSH rule for remote access (cidr)
+    local_action:
+      module: cs_securitygroup_rule
+      security_group: "{{ instance_security_group_name }}"
+      start_port: 22
+      end_port: 22
+      cidr: 0.0.0.0/0
+      state: absent
+    tags: sgr
+
+  - name: Delete instance SSH rule for remote access
+    local_action:
+      module: cs_securitygroup_rule
+      security_group: "{{ instance_security_group_name }}"
+      start_port: 22
+      end_port: 22
+      user_security_group: "{{ item }}"
+      state: absent
+    with_items: "{{ instance_ssh_group_names }}"
+    tags: sgr

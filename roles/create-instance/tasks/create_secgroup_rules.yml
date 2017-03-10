@@ -1,0 +1,19 @@
+#  Create instance Security Groups rules
+  - name: Create instance SSH rule for remote access (cidr)
+    local_action:
+      module: cs_securitygroup_rule
+      security_group: "{{ instance_security_group_name}}"
+      start_port: 22
+      end_port: 22
+      cidr: 0.0.0.0/0
+    tags: sgr
+
+  - name: Create instance SSH rule for remote access
+    local_action:
+      module: cs_securitygroup_rule
+      security_group: "{{ instance_security_group_name }}"
+      start_port: 22
+      end_port: 22
+      user_security_group: "{{ item }}"
+    with_items: "{{ instance_ssh_group_names }}"
+    tags: sgr

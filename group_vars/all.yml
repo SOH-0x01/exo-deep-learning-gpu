@@ -1,0 +1,10 @@
+# Global variables
+instance_name: targaryen
+instance_env: PROD
+instance_role: security
+instance_prefix: pam-ti-exo
+instance_ssh_key: pam-ti-exo-kp
+instance_security_group_name: pam-ti-exo-sg-targaryen
+# Cluster access
+instance_ssh_group_names: [default]
+instance_service_group_names: [default]

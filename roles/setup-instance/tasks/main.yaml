@@ -1,0 +1,4 @@
+---
+  - include: setup_base.yml
+  - include: setup_gpu.yml
+  - include: setup_nn.yml

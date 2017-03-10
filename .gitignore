@@ -1,0 +1,4 @@
+cloudstack.ini
+cloudstack.py
+ansible.log
+*.retry
